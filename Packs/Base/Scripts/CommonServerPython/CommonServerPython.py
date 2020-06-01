@@ -1862,6 +1862,10 @@ def is_ip_valid(s, accept_v6_ips=False):
         return True
 
 
+def get_integration_name():
+    return demisto.callingContext.get('IntegrationBrand')
+
+
 class Common(object):
     class Indicator(object):
         """
@@ -1913,7 +1917,7 @@ class Common(object):
 
             self.indicator = indicator
             self.indicator_type = indicator_type
-            self.integration_name = integration_name
+            self.integration_name = integration_name or get_integration_name()
             self.score = score
             self.malicious_description = malicious_description
 
@@ -2256,11 +2260,12 @@ class Common(object):
             self.published = published
             self.modified = modified
             self.description = description
-            self.dbot_score = None
-
-        def set_dbot_score(self, dbot_score):
-            # type: (Common.DBotScore) -> None
-            self.dbot_score = dbot_score
+            self.dbot_score = Common.DBotScore(
+                indicator=id,
+                indicator_type=DBotScoreType.CVE,
+                integration_name='',
+                score=Common.DBotScore.NONE
+            )
 
         def to_context(self):
             cve_context = {
@@ -2278,12 +2283,6 @@ class Common(object):
 
             if self.description:
                 cve_context['Description'] = self.description
-
-            if self.dbot_score and self.dbot_score.score == Common.DBotScore.BAD:
-                cve_context['Malicious'] = {
-                    'Vendor': self.dbot_score.integration_name,
-                    'Description': self.dbot_score.malicious_description
-                }
 
             ret_value = {
                 Common.CVE.CONTEXT_PATH: cve_context
