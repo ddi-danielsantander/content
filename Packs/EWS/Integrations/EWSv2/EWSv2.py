@@ -135,7 +135,7 @@ https://ps.compliance.protection.outlook.com/powershell-liveid/ -Credential $Use
 
 if (!$session)
 {
-   "Failed to create remote PS session"
+   "Failed to create remote Powershell  session"
    return
 }
 
